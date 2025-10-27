@@ -2,6 +2,7 @@ package com.llm.chats;
 
 import com.llm.dto.AIResponse;
 import com.llm.dto.UserInput;
+import com.llm.service.LlamaService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +19,10 @@ public class ChatController {
     private static final Logger log = LoggerFactory.getLogger(ChatController.class);
 
     private final ChatClient chatClient;
+    private final LlamaService llamaService;
 
-    public ChatController(ChatClient.Builder chatClientBuilder) {
+    public ChatController(ChatClient.Builder chatClientBuilder, LlamaService llamaService) {
+        this.llamaService = llamaService;
         this.chatClient = chatClientBuilder
                 .build();
     }
@@ -51,12 +54,14 @@ public class ChatController {
 
     @PostMapping("/v1/chats/stream")
     public Flux<String> chatWithStream(@RequestBody UserInput userInput) {
-        return chatClient.prompt()
-                .user(userInput.prompt())
-                .stream()
-                .content()
-                .doOnNext(s -> log.info("s : {}", s))
-                .doOnComplete(() -> log.info("Data complete"));
+        return this.llamaService.getChatStream(userInput.prompt());
+//        return chatClient.prompt()
+//                .user(userInput.prompt())
+//                .stream()
+//                .content()
+//                .map(chunk -> chunk)
+//                .doOnNext(s -> log.info("s : {}", s))
+//                .doOnComplete(() -> log.info("Data complete"));
     }
 
     @PostMapping("/v2/chats")

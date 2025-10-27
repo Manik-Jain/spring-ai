@@ -4,6 +4,7 @@ import com.llm.dto.UserInput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
@@ -36,8 +37,10 @@ public class PromptController {
     public String prompts(@RequestBody UserInput userInput) {
         var responseSpec = chatClient
                 .prompt()
-                .system(systemRole)
+                //.system(systemRole)
+                .system(promptSystemSpec -> promptSystemSpec.text(systemRole).params(Map.of("language", "Java")))
                 .user(userInput.prompt())
+                .advisors(new SimpleLoggerAdvisor())
                 .call();
 
         log.info("responseSpec : {} ", responseSpec);
@@ -60,6 +63,7 @@ public class PromptController {
 
         var responseSpec = chatClient
                 .prompt(prompt)
+                .advisors(new SimpleLoggerAdvisor())
                 .call();
 
         log.info("responseSpec : {} ", responseSpec);
